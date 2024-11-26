@@ -1,17 +1,25 @@
 from tkinter import *
 import requests
 from tkinter import filedialog as fd
+from tkinter import messagebox as mb
 from tkinter import ttk
 
 def upload():
-    filepath=fd.askopenfilename()
-    if filepath:
-        files={"file":open(filepath, "rb")}
-        response=requests.post('https://file.io/', files=files)
-        if response.status_code==200:
-            data=response.json()
-            link=data["link"]
-            entry.insert(0, link)
+    try:
+        filepath=fd.askopenfilename()
+        if filepath:
+            with open(filepath, "rb") as f:
+                files={"file":f}
+                response=requests.post('https://file.io/', files=files)
+                response.raise_for_status()
+                data=response.json()
+                link=data["link"]
+                entry.delete(0,END)
+                entry.insert(0, link)
+    except KeyError:
+        mb.showerror("Ошибка!","Невозможно получить ссылку")
+    except Exception as e:
+        mb.showerror("Ошибка",e)
 
 window=Tk()
 window.title("Файл в облако")
